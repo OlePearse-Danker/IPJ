@@ -6,10 +6,15 @@ import time
 import streamlit as st
 
 
-st.title("Energy Production and Consumption")
+st.title("WATT-Meister-Consulting Calculator")
+st.divider()
+st.subheader('Energy production and consumption')
+st.write('For the following plots, we collected the electricity market data of Germany for the years 2020, 2021, and 2022 and analyzed the production and consumption. In the first plot, you can see the production and consumption for any specific day in the period from 2020 to 2022.')
+
 start_date = datetime.date(2020, 1, 1)
 end_date = datetime.date(2022, 12, 31)
 default_date = datetime.date(2020, 1, 1)
+st.write("##")
 input_date = st.date_input("Select a Date",value = default_date, min_value=start_date, max_value=end_date)
 
 def parse_datetime(date_str, time_str):
@@ -171,7 +176,15 @@ if input_date:
 # ... Remaining code omitted for brevity ...
 
 if input_date:
+
+
     st.pyplot(fig1)
+
+
+    st.write("##")
+    st.write("##")
+    st.subheader('Amount of quarter hours with Renewable Energy in Percent')
+    st.markdown("---")
     st.pyplot(fig2)
 
     endzeit = time.time()
