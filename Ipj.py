@@ -211,10 +211,16 @@ if input_date:
 
 
     # Create the figure and axes objects for the second plot
-    fig2, ax2 = plt.subplots(figsize=(6, 4))
-    ax2.bar(range(len(counts)), counts)
-    ax2.set_title('Anzahl der Viertelstunden mit 10-100 % EE-Anteil')
-    ax2.set_xticklabels(['10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%'])
+fig2, ax2 = plt.subplots(figsize=(6, 4))
+
+    # Set the x-tick positions and labels
+x_ticks = range(len(counts))
+x_labels = ['10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%']
+ax2.set_xticks(x_ticks)
+ax2.set_xticklabels(x_labels)
+
+ax2.bar(x_ticks, counts)
+ax2.set_title('Anzahl der Viertelstunden mit 10-100 % EE-Anteil')
 
 
 
@@ -232,21 +238,36 @@ if input_date:
     st.markdown("---")
     st.pyplot(fig2)
 
-    endzeit = time.time()
-    dauer = endzeit - startzeit
-    st.write(f"Startzeit: {startzeit}")
-    st.write(f"Endzeit: {endzeit}")
-    st.write(f"Dauer des Programms: {dauer} Sekunden")
 
 
-
-# Testing of reading in data as a dataframe
+# reading in data as a dataframe
 df = pd.read_csv(csv_datei1, delimiter=";")
 df['Datum'] = pd.to_datetime(df['Datum'], format='%d.%m.%Y')
 df['Anfang'] = pd.to_datetime(df['Anfang'], format='%H:%M')
 df['Ende'] = pd.to_datetime(df['Ende'], format='%H:%M')
 
-df['Wasserkraft [MWh] Originalauflösungen'] = df['Wasserkraft [MWh] Originalauflösungen'].str.replace(',', '.').astype(float)
+df['Wasserkraft [MWh] Originalauflösungen'] = df['Wasserkraft [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+df['Biomasse [MWh] Originalauflösungen'] = df['Biomasse [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+df['Wind Offshore [MWh] Originalauflösungen'] = df['Wind Offshore [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+df['Wind Onshore [MWh] Originalauflösungen'] = df['Wind Onshore [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+df['Photovoltaik [MWh] Originalauflösungen'] = df['Photovoltaik [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+
+column_name = 'Sonstige Erneuerbare [MWh] Originalauflösungen'
+
+for idx, value in enumerate(df[column_name]):
+    try:
+        df.at[idx, column_name] = float(value.replace(".", "").replace(",", "."))
+    except (ValueError, AttributeError):
+        df.at[idx, column_name] = 0
+
+
+df['Kernenergie [MWh] Originalauflösungen'] = df['Kernenergie [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+df['Braunkohle [MWh] Originalauflösungen'] = df['Braunkohle [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+df['Steinkohle [MWh] Originalauflösungen'] = df['Steinkohle [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+df['Erdgas [MWh] Originalauflösungen'] = df['Erdgas [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+df['Pumpspeicher [MWh] Originalauflösungen'] = df['Pumpspeicher [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+df['Sonstige Konventionelle [MWh] Originalauflösungen'] = df['Sonstige Konventionelle [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
+
 
 # printing the day of the week
 # print(df['Datum'].dt.day_name())
@@ -258,13 +279,52 @@ df['Wasserkraft [MWh] Originalauflösungen'] = df['Wasserkraft [MWh] Originalauf
 # setting the date as an index 
 df.set_index('Datum', inplace=True)
 
-
+bio_mean = round(df['Biomasse [MWh] Originalauflösungen'].mean(), 2)
 water_mean = round(df['Wasserkraft [MWh] Originalauflösungen'].mean(), 2)
-print(water_mean)
+windoff_mean = round(df['Wind Offshore [MWh] Originalauflösungen'].mean(), 2)
+windon_mean = round(df['Wind Onshore [MWh] Originalauflösungen'].mean(), 2)
+pv_mean = round(df['Photovoltaik [MWh] Originalauflösungen'].mean(), 2)
+other_re_mean = round(df['Sonstige Erneuerbare [MWh] Originalauflösungen'].mean(), 2)
+nuclear_mean = round(df['Kernenergie [MWh] Originalauflösungen'].mean(), 2)
+bc_mean = round(df['Braunkohle [MWh] Originalauflösungen'].mean(), 2)
+sc_mean = round(df['Steinkohle [MWh] Originalauflösungen'].mean(), 2)
+gas_mean = round(df['Erdgas [MWh] Originalauflösungen'].mean(), 2)
+ps_mean = round(df['Pumpspeicher [MWh] Originalauflösungen'].mean(), 2)
+other_conv = round(df['Sonstige Konventionelle [MWh] Originalauflösungen'].mean(), 2)
+
+
 
 
 st.subheader("Average Production")
+st.write("In the following you can see the daily average over the last three years for the specific production kind")
 
-st.metric(label="Waterpower [MWh]", value=water_mean, delta="1.2 MWh")
+col1, col2, col3 = st.columns(3)
 
 
+with col1:
+    st.metric(label="Biomass [MWh]", value=bio_mean)
+    st.metric(label="Waterpower [MWh]", value=water_mean)
+    st.metric(label="Wind Offshore [MWh]", value=windoff_mean)
+    st.metric(label="Wind Onshore [MWh]", value=windon_mean)
+
+with col2:
+    st.metric(label="Photovoltaic [MWh]", value=pv_mean)
+    st.metric(label="Other Renewable [MWh]", value=other_re_mean)
+    st.metric(label="Nuclear [MWh]", value=nuclear_mean)
+    st.metric(label="Brown Coal [MWh]", value=bc_mean)
+
+with col3:
+    st.metric(label="Hard Coal [MWh]", value=sc_mean)
+    st.metric(label="Gas [MWh]", value=gas_mean)
+    st.metric(label="Pump storage [MWh]", value=ps_mean)
+    st.metric(label="Other Conventional [MWh]", value=other_conv)
+
+
+
+
+
+endzeit = time.time()
+dauer = endzeit - startzeit
+st.write(f"Startzeit: {startzeit}")
+st.write(f"Endzeit: {endzeit}")
+st.write(f"Dauer des Programms: {dauer} Sekunden")
