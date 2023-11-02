@@ -5,6 +5,9 @@ import matplotlib.style as style
 import datetime
 import time
 import streamlit as st
+from matplotlib.animation import FuncAnimation
+import numpy as np
+
 
 
 # Apply dark background style
@@ -26,7 +29,7 @@ def parse_datetime(date_str, time_str):
 
 startzeit = time.time()
 
-csv_datei = 'Realisierte_Erzeugung_202001010000_202212312359_Viertelstunde.csv'
+csv_datei1 = 'Realisierte_Erzeugung_202001010000_202212312359_Viertelstunde.csv'
 csv_datei2 = 'Realisierter_Stromverbrauch_202001010000_202212312359_Viertelstunde.csv'
 
 
@@ -35,7 +38,7 @@ energie_daten2 = []
 production = []
 consumption = []
 
-with open(csv_datei, 'r') as file:
+with open(csv_datei1, 'r') as file:
     csv_reader = csv.reader(file, delimiter=';')
     next(csv_reader)
     for row in csv_reader:
@@ -76,6 +79,10 @@ with open(csv_datei, 'r') as file:
             'Sonstige Konventionelle [MWh]': sonstige_konventionelle
         }
         energie_daten.append(datensatz)
+
+
+# reading in the data as a dataframe
+
 
 
 with open(csv_datei2, 'r') as file:
@@ -153,6 +160,17 @@ counts = range1(production, consumption)
 print(counts)
 
 
+def animate(i):
+
+    ax1 = plt.subplots(figsize=(12, 6))
+
+    ax1.plot(hours, consumption_day, label='Consumption')
+    ax1.plot(hours, production_day, label='Production (renewable energy)', linewidth=2.5)
+ 
+    ax1.set_xlabel('Time [Hour]')
+    ax1.set_ylabel('Power (MWh)')
+
+
 
 
 if input_date:
@@ -163,45 +181,33 @@ if input_date:
 
     ax1.plot(hours, consumption_day, label='Consumption')
     ax1.plot(hours, production_day, label='Production (renewable energy)', linewidth=2.5)
-
+ 
     ax1.set_xlabel('Time [Hour]')
     ax1.set_ylabel('Power (MWh)')
     ax1.set_title(f'Energy production and consumption for {selected_date.strftime("%d.%m.%Y")}')
     ax1.fill_between(hours, consumption_day)
     ax1.fill_between(hours, production_day)
     ax1.legend()
+
+
     # plt.tight_layout()
     ax1.grid(True)
     ax1.set_xticks(range(0, 24))
 
     # printing out the daily metrics
-    #'''biomass_production = sum(datensatz['Biomasse [MWh]'] for datensatz in filtered_data)
-    #water_production = sum(datensatz['Wasserkraft [MWh]'] for datensatz in filtered_data)
-    #wind_off_production = sum(datensatz['Wind Offshore [MWh]'] for datensatz in filtered_data)
-    #wind_on_production = sum(datensatz['Wind Onshore [MWh]'] for datensatz in filtered_data)
-    #pv_production = sum(datensatz['Photovoltaik [MWh]'] for datensatz in filtered_data)
-    #other_re_production = sum(datensatz['Sonstige Erneuerbare [MWh]'] for datensatz in filtered_data)
-    #nuclear_production = sum(datensatz[ 'Kernenergie [MWh]'] for datensatz in filtered_data)
-    #browncoal_production = sum(datensatz['Braunkohle [MWh]'] for datensatz in filtered_data)
-    #stonecoal_production = sum(datensatz['Steinkohle [MWh]'] for datensatz in filtered_data)
-    #gas_production = sum(datensatz['Erdgas [MWh]'] for datensatz in filtered_data)
-    #storage_production = sum(datensatz['Pumpspeicher [MWh]'] for datensatz in filtered_data)
-    #other_conv_production = sum(datensatz['Sonstige Konventionelle [MWh]'] for datensatz in filtered_data)
-    #
-#
-    #st.subheader('Overview')
-    #st.metric(label='Biomass Production (MWh)', value=biomass_production)
-    #st.metric(label='Wasserkraft [MWh]', value=biomass_production)
-    #st.metric(label='Wind Offshore Production (MWh)', value=wind_off_production)
-    #st.metric(label='Wind Onshore Production (MWh)', value=wind_on_production)
-    #st.metric(label='Photovoltaik Production (MWh)', value=pv_production)
-    #st.metric(label='Sonstige Erneuerbare Production (MWh)', value=other_re_production)
-    #st.metric(label='Nuclear Production (MWh)', value=nuclear_production)
-    #st.metric(label='Browncoal Production (MWh)', value=browncoal_production)
-    #st.metric(label='Stonecoal Production (MWh)', value=stonecoal_production)
-    #st.metric(label='Gas Production (MWh)', value=gas_production)
-    #st.metric(label='Storage Production (MWh)', value=storage_production)
-    #st.metric(label='Sonstige Konventionelle Production (MWh)', value=other_conv_production)'''
+    biomass_production = sum(datensatz['Biomasse [MWh]'] for datensatz in filtered_data)
+    water_production = sum(datensatz['Wasserkraft [MWh]'] for datensatz in filtered_data)
+    wind_off_production = sum(datensatz['Wind Offshore [MWh]'] for datensatz in filtered_data)
+    wind_on_production = sum(datensatz['Wind Onshore [MWh]'] for datensatz in filtered_data)
+    pv_production = sum(datensatz['Photovoltaik [MWh]'] for datensatz in filtered_data)
+    other_re_production = sum(datensatz['Sonstige Erneuerbare [MWh]'] for datensatz in filtered_data)
+    nuclear_production = sum(datensatz[ 'Kernenergie [MWh]'] for datensatz in filtered_data)
+    browncoal_production = sum(datensatz['Braunkohle [MWh]'] for datensatz in filtered_data)
+    stonecoal_production = sum(datensatz['Steinkohle [MWh]'] for datensatz in filtered_data)
+    gas_production = sum(datensatz['Erdgas [MWh]'] for datensatz in filtered_data)
+    storage_production = sum(datensatz['Pumpspeicher [MWh]'] for datensatz in filtered_data)
+    other_conv_production = sum(datensatz['Sonstige Konventionelle [MWh]'] for datensatz in filtered_data)
+    
 
 
     # Create the figure and axes objects for the second plot
@@ -233,5 +239,32 @@ if input_date:
     st.write(f"Dauer des Programms: {dauer} Sekunden")
 
 
+
+# Testing of reading in data as a dataframe
+df = pd.read_csv(csv_datei1, delimiter=";")
+df['Datum'] = pd.to_datetime(df['Datum'], format='%d.%m.%Y')
+df['Anfang'] = pd.to_datetime(df['Anfang'], format='%H:%M')
+df['Ende'] = pd.to_datetime(df['Ende'], format='%H:%M')
+
+df['Wasserkraft [MWh] Originalauflösungen'] = df['Wasserkraft [MWh] Originalauflösungen'].str.replace(',', '.').astype(float)
+
+# printing the day of the week
+# print(df['Datum'].dt.day_name())
+
+# data for 2020 (via filtering)
+# filt_20 = ((df['Datum'] >= pd.to_datetime('01.01.2020')) & (df['Datum'] < pd.to_datetime('01.01.2021')))
+# print(df.loc[filt_20])
+
+# setting the date as an index 
+df.set_index('Datum', inplace=True)
+
+
+water_mean = round(df['Wasserkraft [MWh] Originalauflösungen'].mean(), 2)
+print(water_mean)
+
+
+st.subheader("Average Production")
+
+st.metric(label="Waterpower [MWh]", value=water_mean, delta="1.2 MWh")
 
 
