@@ -7,6 +7,7 @@ import time
 import streamlit as st
 from matplotlib.animation import FuncAnimation
 import numpy as np
+import plotly.express as px
 
 
 
@@ -193,22 +194,7 @@ if input_date:
     # plt.tight_layout()
     ax1.grid(True)
     ax1.set_xticks(range(0, 24))
-
-    # printing out the daily metrics
-    biomass_production = sum(datensatz['Biomasse [MWh]'] for datensatz in filtered_data)
-    water_production = sum(datensatz['Wasserkraft [MWh]'] for datensatz in filtered_data)
-    wind_off_production = sum(datensatz['Wind Offshore [MWh]'] for datensatz in filtered_data)
-    wind_on_production = sum(datensatz['Wind Onshore [MWh]'] for datensatz in filtered_data)
-    pv_production = sum(datensatz['Photovoltaik [MWh]'] for datensatz in filtered_data)
-    other_re_production = sum(datensatz['Sonstige Erneuerbare [MWh]'] for datensatz in filtered_data)
-    nuclear_production = sum(datensatz[ 'Kernenergie [MWh]'] for datensatz in filtered_data)
-    browncoal_production = sum(datensatz['Braunkohle [MWh]'] for datensatz in filtered_data)
-    stonecoal_production = sum(datensatz['Steinkohle [MWh]'] for datensatz in filtered_data)
-    gas_production = sum(datensatz['Erdgas [MWh]'] for datensatz in filtered_data)
-    storage_production = sum(datensatz['Pumpspeicher [MWh]'] for datensatz in filtered_data)
-    other_conv_production = sum(datensatz['Sonstige Konventionelle [MWh]'] for datensatz in filtered_data)
     
-
 
     # Create the figure and axes objects for the second plot
 fig2, ax2 = plt.subplots(figsize=(6, 4))
@@ -246,6 +232,7 @@ df['Datum'] = pd.to_datetime(df['Datum'], format='%d.%m.%Y')
 df['Anfang'] = pd.to_datetime(df['Anfang'], format='%H:%M')
 df['Ende'] = pd.to_datetime(df['Ende'], format='%H:%M')
 
+
 df['Wasserkraft [MWh] Originalauflösungen'] = df['Wasserkraft [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
 df['Biomasse [MWh] Originalauflösungen'] = df['Biomasse [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
 df['Wind Offshore [MWh] Originalauflösungen'] = df['Wind Offshore [MWh] Originalauflösungen'].str.replace(".", "").str.replace(",", ".").astype(float)
@@ -273,7 +260,7 @@ df['Sonstige Konventionelle [MWh] Originalauflösungen'] = df['Sonstige Konventi
 # print(df['Datum'].dt.day_name())
 
 # data for 2020 (via filtering)
-# filt_20 = ((df['Datum'] >= pd.to_datetime('01.01.2020')) & (df['Datum'] < pd.to_datetime('01.01.2021')))
+filt_20 = ((df['Datum'] >= pd.to_datetime('01.01.2020')) & (df['Datum'] < pd.to_datetime('01.01.2021')))
 # print(df.loc[filt_20])
 
 # setting the date as an index 
@@ -295,7 +282,7 @@ other_conv = round(df['Sonstige Konventionelle [MWh] Originalauflösungen'].mean
 
 
 
-st.subheader("Average Production")
+st.subheader("Daily Average Production")
 st.write("In the following you can see the daily average over the last three years for the specific production kind")
 
 col1, col2, col3 = st.columns(3)
@@ -320,6 +307,41 @@ with col3:
     st.metric(label="Other Conventional [MWh]", value=other_conv)
 
 
+# df.reset_index(inplace=True)
+
+ree_production_sum = ['Wasserkraft [MWh] Originalauflösungen', 'Biomasse [MWh] Originalauflösungen',
+                  'Wind Offshore [MWh] Originalauflösungen', 'Wind Onshore [MWh] Originalauflösungen',
+                  'Photovoltaik [MWh] Originalauflösungen', 'Sonstige Erneuerbare [MWh] Originalauflösungen']
+df['Renewable Energy Sum [MWh]'] = df[ree_production_sum].sum(axis=1)
+# testing bar charts
+
+
+st.subheader('Production of Renewable Energy')
+year_options = [2020, 2021, 2022]
+year = st.selectbox('Which year would you like to see?', year_options)
+
+if year == 2020:
+    start_date = '2020-01-01'
+    end_date = '2020-12-31'
+    filtered_df = df[(df.index >= start_date) & (df.index <= end_date)]
+    total_production = filtered_df['Renewable Energy Sum [MWh]'].sum()
+
+if year == 2021:
+    start_date = '2021-01-01'
+    end_date = '2021-12-31'
+    filtered_df = df[(df.index >= start_date) & (df.index <= end_date)]
+    total_production = filtered_df['Renewable Energy Sum [MWh]'].sum()
+
+if year == 2022:
+    start_date = '2022-01-01'
+    end_date = '2022-12-31'
+    filtered_df = df[(df.index >= start_date) & (df.index <= end_date)]
+    total_production = filtered_df['Renewable Energy Sum [MWh]'].sum()
+
+fig = px.bar(filtered_df, x=filtered_df.index, y='Renewable Energy Sum [MWh]')
+fig.update_layout(width=800)
+st.write(fig)
+st.metric(label='Renwable Energy production for ' + str(year) + ' [MWh]', value=total_production)
 
 
 

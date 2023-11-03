@@ -12,7 +12,7 @@ df['Datum'] = pd.to_datetime(df['Datum'], format='%d.%m.%Y')
 df['Anfang'] = pd.to_datetime(df['Anfang'], format='%H:%M')
 df['Ende'] = pd.to_datetime(df['Ende'], format='%H:%M')
 
-df['Wasserkraft [MWh] Originalauflösungen'] = df['Wasserkraft [MWh] Originalauflösungen'].str.replace(',', '.').astype(float)
+# df['Wasserkraft [MWh] Originalauflösungen'] = df['Wasserkraft [MWh] Originalauflösungen'].str.replace(',', '.').astype(float)
 
 # printing the day of the week
 # print(df['Datum'].dt.day_name())
@@ -22,9 +22,14 @@ df['Wasserkraft [MWh] Originalauflösungen'] = df['Wasserkraft [MWh] Originalauf
 # print(df.loc[filt_20])
 
 # setting the date as an index 
+
+
 df.set_index('Datum', inplace=True)
 
 
-water_mean = df['Wasserkraft [MWh] Originalauflösungen'].mean()
-print(water_mean)
+df['Wasserkraft [MWh] Originalauflösungen'] = df['Wasserkraft [MWh] Originalauflösungen'].str.replace(',', '').astype(float)
+# print(water_mean)
+
+
+print(df['2020-01-01':'2020-12-31']['Wasserkraft [MWh] Originalauflösungen'].sum())
 
